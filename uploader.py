@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Auteur : Frozenk (Christopher SIMON)
+# Auteur : Frozenk / Christopher SIMON
 
 '''
 Description :
@@ -20,12 +20,24 @@ Todo :
 
 import os
 import socket
+import readline
 import http.server
 import socketserver
 import subprocess
 import netifaces as ni
 from simple_term_menu import TerminalMenu
 
+
+def completer(text, state):
+    # Si le chemin commence par '/', utilisez-le tel quel, sinon utilisez le répertoire courant
+    directory = text if text.startswith('/') else os.path.join(os.getcwd(), text)
+    base = os.path.basename(text)
+    options = [f for f in os.listdir(directory) if f.startswith(base)]
+    try:
+        return options[state]
+    except IndexError:
+        return None
+    
 def Xclip():
     
     if os.system("command -v xclip > /dev/null 2>&1") != 0:
@@ -126,16 +138,21 @@ def MenuGeneral():
     selected_ip = ChoixIP[ip_entry_index]
     IPHOST = ni.ifaddresses(selected_ip).get(ni.AF_INET)[0]['addr']
 
-    # Menu Choix du fichier a upload
+  # Menu Choix du fichier a upload
     ChoixFichier = ["Autre dossier"] + os.listdir("./")
     fichier_menu = TerminalMenu(ChoixFichier, menu_cursor="=>  ", menu_highlight_style=style, title="Choisissez un fichier :")
     fichier_entry_index = fichier_menu.show()
     if ChoixFichier[fichier_entry_index] == "Autre dossier":
-        selected_file = input("Veuillez entrer le chemin du fichier : ")
-        file_name = os.path.basename(selected_file)
-        file_dir = os.path.dirname(selected_file)
-        os.chdir(file_dir)
-        selected_file = file_name
+        selected_directory = ("/") 
+        while True:
+            ChoixFichier = os.listdir(selected_directory)  
+            fichier_menu = TerminalMenu(ChoixFichier, menu_cursor="=>  ", menu_highlight_style=style, title="Choisissez un fichier :")
+            fichier_entry_index = fichier_menu.show()
+            selected_file = os.path.join(selected_directory, ChoixFichier[fichier_entry_index])
+            if os.path.isfile(selected_file):
+                break
+            else:
+                selected_directory = selected_file  
     else:
         selected_file = ChoixFichier[fichier_entry_index]
     print(f"Vous avez sélectionné le fichier {selected_file}!")
@@ -157,6 +174,8 @@ def MenuGeneral():
 
 
 def main():
+    readline.set_completer(completer)
+    readline.parse_and_bind("tab: complete")
     Xclip()
     OS, IPHOST, selected_file, selected_port = MenuGeneral()
     Syntaxe(OS, IPHOST, selected_file,selected_port)
