@@ -3,6 +3,9 @@ Ce script Python vous permet de télécharger des fichiers sur une machine dista
 Il génère automatiquement la commande de téléchargement appropriée et ouvre un serveur Python local pour fournir le fichier à télécharger jusqu'à ce qu'une réponse HTTP 200 soit reçue, 
 puis le serveur se ferme.
 
+![uploader](https://github.com/Frozenka/uploader/assets/13807685/92b00363-2398-43bb-862e-08c3545ce8e4)
+
+
 ## Fonctionnalités
 - **Sélection Automatique du Fichier :** Le script propose automatiquement les fichiers disponibles dans le répertoire courant pour le téléchargement, simplifiant ainsi le processus de téléchargement.
 - **Gestion Intuitive du Système d'Exploitation :** Vous pouvez choisir le système d'exploitation cible (Linux ou Windows) pour obtenir la commande de téléchargement appropriée.
