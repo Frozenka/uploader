@@ -139,10 +139,10 @@ def MenuGeneral():
     IPHOST = ni.ifaddresses(selected_ip).get(ni.AF_INET)[0]['addr']
 
   # Menu Choix du fichier a upload
-    ChoixFichier = ["Autre dossier"] + os.listdir("./")
+    ChoixFichier = ["..."] + os.listdir("./")
     fichier_menu = TerminalMenu(ChoixFichier, menu_cursor="=>  ", menu_highlight_style=style, title="Choisissez un fichier :")
     fichier_entry_index = fichier_menu.show()
-    if ChoixFichier[fichier_entry_index] == "Autre dossier":
+    if ChoixFichier[fichier_entry_index] == "...":
         selected_directory = ("/") 
         while True:
             ChoixFichier = ["..."] + os.listdir(selected_directory)  
