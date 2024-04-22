@@ -145,9 +145,12 @@ def MenuGeneral():
     if ChoixFichier[fichier_entry_index] == "Autre dossier":
         selected_directory = ("/") 
         while True:
-            ChoixFichier = os.listdir(selected_directory)  
+            ChoixFichier = ["..."] + os.listdir(selected_directory)  
             fichier_menu = TerminalMenu(ChoixFichier, menu_cursor="=>  ", menu_highlight_style=style, title="Choisissez un fichier :")
             fichier_entry_index = fichier_menu.show()
+            if ChoixFichier[fichier_entry_index] == "...":
+                selected_directory = os.path.dirname(selected_directory)  
+                continue    
             selected_file = os.path.join(selected_directory, ChoixFichier[fichier_entry_index])
             if os.path.isfile(selected_file):
                 break
