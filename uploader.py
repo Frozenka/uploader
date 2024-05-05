@@ -131,8 +131,9 @@ def MenuGeneral():
     IPHOST = ni.ifaddresses(selected_ip).get(ni.AF_INET)[0]['addr']
 
   # Menu Choix du fichier a upload
+    current_directory = os.getcwd()
     selected_file = subprocess.check_output("fzf", shell=True).decode().strip()
-    selected_file = os.path.basename (selected_file)
+    selected_file = os.path.relpath(selected_file, current_directory) 
     print(f"Vous avez sélectionné le fichier {selected_file}!")
 
 
