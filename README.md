@@ -27,6 +27,7 @@ puis le serveur se ferme.
 ## Todo
 - Améliorer le style graphique de l'interface utilisateur.
 - Gérer les erreurs de manière plus efficace.
+- ~Passage a fzf pour la séléction du fichier~
 - ~Ajouter une fonctionnalité d'autocomplétion pour les fichiers en mode manuel.~
 
 
