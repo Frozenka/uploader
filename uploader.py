@@ -28,15 +28,7 @@ import netifaces as ni
 from simple_term_menu import TerminalMenu
 
 
-def completer(text, state):
-    # Si le chemin commence par '/', utilisez-le tel quel, sinon utilisez le répertoire courant
-    directory = text if text.startswith('/') else os.path.join(os.getcwd(), text)
-    base = os.path.basename(text)
-    options = [f for f in os.listdir(directory) if f.startswith(base)]
-    try:
-        return options[state]
-    except IndexError:
-        return None
+
     
 def Xclip():
     
@@ -139,26 +131,10 @@ def MenuGeneral():
     IPHOST = ni.ifaddresses(selected_ip).get(ni.AF_INET)[0]['addr']
 
   # Menu Choix du fichier a upload
-    ChoixFichier = ["..."] + os.listdir("./")
-    fichier_menu = TerminalMenu(ChoixFichier, menu_cursor="=>  ", menu_highlight_style=style, title="Choisissez un fichier :")
-    fichier_entry_index = fichier_menu.show()
-    if ChoixFichier[fichier_entry_index] == "...":
-        selected_directory = ("/") 
-        while True:
-            ChoixFichier = ["..."] + os.listdir(selected_directory)  
-            fichier_menu = TerminalMenu(ChoixFichier, menu_cursor="=>  ", menu_highlight_style=style, title="Choisissez un fichier :")
-            fichier_entry_index = fichier_menu.show()
-            if ChoixFichier[fichier_entry_index] == "...":
-                selected_directory = os.path.dirname(selected_directory)  
-                continue    
-            selected_file = os.path.join(selected_directory, ChoixFichier[fichier_entry_index])
-            if os.path.isfile(selected_file):
-                break
-            else:
-                selected_directory = selected_file  
-    else:
-        selected_file = ChoixFichier[fichier_entry_index]
+    selected_file = subprocess.check_output("fzf", shell=True).decode().strip()
+    selected_file = os.path.basename (selected_file)
     print(f"Vous avez sélectionné le fichier {selected_file}!")
+
 
     #Menu Port downlaod
     ChoixPort = ["80","8080","8000","443","1234","666","Autre Port"]
@@ -177,8 +153,6 @@ def MenuGeneral():
 
 
 def main():
-    readline.set_completer(completer)
-    readline.parse_and_bind("tab: complete")
     Xclip()
     OS, IPHOST, selected_file, selected_port = MenuGeneral()
     Syntaxe(OS, IPHOST, selected_file,selected_port)
