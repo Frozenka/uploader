@@ -13,7 +13,7 @@ puis le serveur se ferme.
 
 ## Utilisation
 1. Clonez ce dépôt sur votre machine locale.
-2. pip3 install -r requierements.txt
+2. pip3 install -r requirements.txt
 3. Assurez-vous d'avoir **Python 3 installé** sur votre système.
 4. Exécutez le script `uploader.py`.
 5. Suivez les instructions à l'écran pour sélectionner le système d'exploitation cible, choisir le fichier à télécharger et spécifier le port d'écoute.
@@ -22,7 +22,7 @@ puis le serveur se ferme.
 ## Prérequis
 - Python 3.x
 - Xclip (pour la copie dans le presse-papiers, uniquement pour Linux)
-- requierements.txt
+- requirements.txt
 
 ## Todo
 - Améliorer le style graphique de l'interface utilisateur.
