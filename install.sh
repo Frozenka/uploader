@@ -7,7 +7,6 @@ pip3 install -r /opt/tools/uploader/requirements.txt
 
 #Géstion Xclip
 if ! command -v xclip > /dev/null 2>&1; then
-    # Installer xclip avec apt
     sudo apt update
     sudo apt install xclip
 fi
