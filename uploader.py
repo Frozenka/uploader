@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-# Auteur : Frozenk / Christopher SIMON
-
+   
 '''
 Description :
+# Auteur : Frozenk / Christopher SIMON        
 Ce programme permet d'obtenir directement la commande de téléchargement en fonction du système d'exploitation (Windows ou Linux),
 et d'ouvrir automatiquement le serveur Python jusqu'à ce qu'un code 200 soit obtenu
 À ce moment, le serveur Python se fermera.
@@ -10,11 +10,6 @@ et d'ouvrir automatiquement le serveur Python jusqu'à ce qu'un code 200 soit ob
 Todo :
 - Améliorer le style graphique
 - Gérer les erreurs de manière plus efficace
-- Mettre en place une autocomplétion pour les fichiers en mode manuel
--
--
--
-
 '''
 
 import os
@@ -38,9 +33,9 @@ signal.signal(signal.SIGINT, signal_handler)
 # Géstion de la syntaxe
 def Syntaxe(OS, IPHOST, selected_file, selected_port):
     if OS == "Linux":
-        syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{selected_file}'
+        syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
     elif OS == "Windows":
-        syntaxeFinal = f'iwr http://{IPHOST}:{selected_port}/{selected_file} -O {selected_file}'
+        syntaxeFinal = f'iwr http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -O {os.path.basename(selected_file)}'
     else:
         print("/!\ Erreur : système d'exploitation non supporté")
         return
@@ -77,7 +72,7 @@ def HTTPserv(selected_file, selected_port):
 
     class Requester(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
-            if self.path == '/' + selected_file:
+            if self.path == '/' + os.path.basename(selected_file):
                 print(f"Requête pour {selected_file} reçue, envoi du fichier...")
                 self.send_response(200)
                 self.end_headers()
@@ -130,11 +125,18 @@ def MenuGeneral():
         IPHOST = IPHOST[0]['addr']
         break
 
+    # Menu choix du répertoire
+    while True:
+        selected_directory = input("Entrez le répertoire de départ pour la sélection de fichier avec fzf : ")
+        if os.path.isdir(selected_directory):
+            break
+        else:
+            print("Le chemin spécifié n'est pas un répertoire valide. Veuillez réessayer.")
+
     # Menu choix du fichier à uploader
-    current_directory = os.getcwd()
     try:
-        selected_file = subprocess.check_output("fzf", shell=True).decode().strip()
-        selected_file = os.path.relpath(selected_file, current_directory)
+        selected_file = subprocess.check_output(f"cd {selected_directory} && fzf", shell=True).decode().strip()
+        selected_file = os.path.join(selected_directory, selected_file)
         print(f"Vous avez sélectionné le fichier {selected_file}!")
     except subprocess.CalledProcessError as e:
         print("/!\ Erreur : Impossible de sélectionner un fichier. Assurez-vous que fzf est installé et réessayez.")
