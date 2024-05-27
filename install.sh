@@ -19,8 +19,7 @@ ALIAS_UPLOADER="alias uploader='python3 $UPLOADER_FILE'"
 
 #Si exegol :
 if [ -f "/.exegol/spwn.sh" ]; then
-  cd /tmp
-  mkdir toto
+  echo "$ALIAS_UPLOADER" >> ~/.zshrc
     
 else
     #Sinon
