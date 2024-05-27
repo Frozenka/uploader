@@ -17,8 +17,7 @@ Lancez la commande suivante :
 
 ## Prérequis
 - Python 3.x
-- Xclip (pour la copie dans le presse-papiers, uniquement pour Linux)
-- requirements.txt
+- Xclip (pour la copie dans le presse-papiers,En cas d'absence, le script l'installera)
 
 ## Todo
 - Améliorer le style graphique de l'interface utilisateur.
