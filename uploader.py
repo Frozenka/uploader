@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# Auteur : Frozenk / Christopher SIMON
 
 '''
+Auteur : Frozenk / Christopher SIMON
 Description :
 Ce programme permet d'obtenir directement la commande de téléchargement en fonction du système d'exploitation (Windows ou Linux), 
 et d'ouvrir automatiquement le serveur Python jusqu'à ce qu'un code 200 soit obtenu 
