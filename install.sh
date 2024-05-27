@@ -24,5 +24,8 @@ case $CURRENT_SHELL in
         exit 1
         ;;
 esac
-#Source du fichier shell
+#Vérif si l'alias éxiste déja
+if ! grep -Fxq "$ALIAS_UPLOADER"; then
+    echo "$ALIAS_UPLOADER" >> "$CURRENT_SHELL"
+fi
 source $CURRENT_SHELL
