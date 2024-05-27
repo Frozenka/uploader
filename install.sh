@@ -5,6 +5,13 @@ mkdir -p /opt/tools
 git clone https://github.com/Frozenka/uploader.git /opt/tools/uploader
 pip3 install -r /opt/tools/uploader/requirements.txt
 
+#Géstion Xclip
+if ! command -v xclip > /dev/null 2>&1; then
+    # Installer xclip avec apt
+    sudo apt update
+    sudo apt install xclip
+fi
+     
 #Déclaration de l'emplacement
 UPLOADER_FILE="/opt/tools/uploader/uploader.py"
 
