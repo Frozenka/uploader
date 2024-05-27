@@ -3,7 +3,7 @@
 sudo mkdir -p /opt/tools
 sudo git clone https://github.com/Frozenka/uploader.git /opt/tools/uploader
 sudo pip3 install -r /opt/tools/uploader/requirements.txt
-
+echo "install ok"
 #Déclaration de l'emplacement
 UPLOADER_FILE="/opt/tools/uploader/uploader.py"
 #Formatage de l'alias
@@ -27,6 +27,7 @@ case $CURRENT_SHELL in
         ;;
 esac
 #Vérif si l'alias éxiste déja
+echo "test alias"
 if ! grep -Fxq "$ALIAS_UPLOADER" "$UPLOADER_FILE"; then
     echo "$ALIAS_UPLOADER" >> "$UPLOADER_FILE"
 fi
