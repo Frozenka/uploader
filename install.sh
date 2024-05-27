@@ -23,6 +23,9 @@ case $CURRENT_SHELL in
     */bash)
         CURRENT_SHELL="$HOME/.bashrc"
         ;;
+        */spawn.sh) #Pour Exegol
+        CURRENT_SHELL="/dev/null"
+        ;;
     */zsh)
         CURRENT_SHELL="$HOME/.zshrc"
         ;;
