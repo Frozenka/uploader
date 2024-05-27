@@ -12,12 +12,8 @@ puis le serveur se ferme.
 - **Gestion Facile du Serveur Local :** Le script ouvre un serveur Python local pour fournir le fichier à télécharger, ce qui facilite le processus et assure une transmission rapide.
 
 ## Utilisation
-1. Clonez ce dépôt sur votre machine locale.
-2. pip3 install -r requirements.txt
-3. Assurez-vous d'avoir **Python 3 installé** sur votre système.
-4. Exécutez le script `uploader.py`.
-5. Suivez les instructions à l'écran pour sélectionner le système d'exploitation cible, choisir le fichier à télécharger et spécifier le port d'écoute.
-6. Une fois que le serveur est démarré et que la commande de téléchargement est copiée dans votre presse-papiers, vous pouvez l'utiliser sur la machine distante.
+Lancez la commande suivante :
+`curl -s https://raw.githubusercontent.com/Frozenka/uploader/main/install.sh | sudo bash`
 
 ## Prérequis
 - Python 3.x
