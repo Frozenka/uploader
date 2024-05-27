@@ -9,6 +9,7 @@ UPLOADER_FILE="/opt/tools/uploader/uploader.py"
 ALIAS_UPLOADER="alias uploader='python3 $UPLOADER_FILE'"
 #Recherche du Shell actif
 CURRENT_SHELL=$(basename "$SHELL")
+echo "Shell : $CURRENT_SHELL"
 case $CURRENT_SHELL in
     bash)
         CURRENT_SHELL="$HOME/.bashrc"
