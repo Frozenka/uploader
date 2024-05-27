@@ -10,12 +10,6 @@ et d'ouvrir automatiquement le serveur Python jusqu'à ce qu'un code 200 soit ob
 Todo :
 - Améliorer le style graphique
 - Gérer les erreurs de manière plus efficace
-- Mettre en place une autocomplétion pour les fichiers en mode manuel
--
--
--
-
-'''
 
 
 import os
