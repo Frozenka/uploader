@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #Téléchargement du git et install des requirements
-sudo mkdir -p /opt/tools
-sudo git clone https://github.com/Frozenka/uploader.git /opt/tools/uploader
-sudo pip3 install -r /opt/tools/uploader/requirements.txt
+mkdir -p /opt/tools
+git clone https://github.com/Frozenka/uploader.git /opt/tools/uploader
+pip3 install -r /opt/tools/uploader/requirements.txt
 
 #Déclaration de l'emplacement
 UPLOADER_FILE="/opt/tools/uploader/uploader.py"
