@@ -8,24 +8,27 @@ UPLOADER_FILE="/opt/tools/uploader/uploader.py"
 #Formatage de l'alias
 ALIAS_UPLOADER="alias uploader='python3 $UPLOADER_FILE'"
 #Recherche du Shell actif
-CURRENT_SHELL=$(basename "$SHELL")
-echo "Shell : $CURRENT_SHELL"
+CURRENT_SHELL="$SHELL"
 case $CURRENT_SHELL in
-    bash)
+    */bash)
         CURRENT_SHELL="$HOME/.bashrc"
         ;;
-    zsh)
+    */zsh)
         CURRENT_SHELL="$HOME/.zshrc"
         ;;
-    sh)
+    */sh)
         CURRENT_SHELL="$HOME/.profile"
         ;;
     *)
+        echo "Shell non pris en charge : $CURRENT_SHELL"
         exit 1
         ;;
 esac
-#Vérif si l'alias éxiste déja
-if ! grep -Fxq "$ALIAS_UPLOADER" "$CURRENT_SHELL"; then
+# Vérification si l'alias existe déjà
+if grep -q "$ALIAS_UPLOADER" "$CURRENT_SHELL"; then
+    echo "Alias déjà présent!"
+else
+    echo "Rajout de l'alias"
     echo "$ALIAS_UPLOADER" >> "$CURRENT_SHELL"
 fi
 source $CURRENT_SHELL
