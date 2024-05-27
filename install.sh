@@ -9,6 +9,7 @@ UPLOADER_FILE="/opt/tools/uploader/uploader.py"
 #Formatage de l'alias
 ALIAS_UPLOADER="alias uploader='python3 $UPLOADER_FILE"
 #Recherche du Shell actif
+echo"Recherche du Shell actif"
 CURRENT_SHELL=$(basename "$SHELL")
 case $CURRENT_SHELL in
     bash)
