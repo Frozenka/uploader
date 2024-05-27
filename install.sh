@@ -33,6 +33,9 @@ fi
         */zsh)
             CURRENT_SHELL="$HOME/.zshrc"
             ;;
+        zsh)
+            CURRENT_SHELL="$HOME/.zshrc"
+            ;;
         */sh)
             CURRENT_SHELL="$HOME/.profile"
             ;;
