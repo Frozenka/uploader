@@ -10,7 +10,7 @@ et d'ouvrir automatiquement le serveur Python jusqu'à ce qu'un code 200 soit ob
 Todo :
 - Améliorer le style graphique
 - Gérer les erreurs de manière plus efficace
-
+'''
 
 import os
 import socket
