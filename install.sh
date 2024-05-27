@@ -24,7 +24,7 @@ case $CURRENT_SHELL in
         CURRENT_SHELL="$HOME/.bashrc"
         ;;
         */spawn.sh) #Pour Exegol
-        CURRENT_SHELL="/dev/null"
+        CURRENT_SHELL="$HOME/.zshrc"
         ;;
     */zsh)
         CURRENT_SHELL="$HOME/.zshrc"
