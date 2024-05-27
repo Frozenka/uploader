@@ -19,7 +19,7 @@ ALIAS_UPLOADER="alias uploader='python3 $UPLOADER_FILE'"
 
 #Si exegol :
 if [ -n "$EXEGOL_START_SHELL" ]; then
-    CURRENT_SHELL="$HOME/.zshrc"
+    echo "$ALIAS_UPLOADER" >> /root/.zshrc
     
 else
     #Sinon
@@ -40,9 +40,7 @@ else
             exit 1
             ;;
     esac
-fi
-
-# Vérification si l'alias existe déjà
+    # Vérification si l'alias existe déjà
 if grep -q "$ALIAS_UPLOADER" "$CURRENT_SHELL"; then
     echo "Alias déjà présent!"
 else
@@ -52,3 +50,7 @@ fi
 
 #Rechargement du shell
 /"$SHELL"
+
+fi
+
+
