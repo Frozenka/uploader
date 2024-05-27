@@ -31,3 +31,4 @@ echo "test alias"
 if ! grep -Fxq "$ALIAS_UPLOADER" "$UPLOADER_FILE"; then
     echo "$ALIAS_UPLOADER" >> "$UPLOADER_FILE"
 fi
+echo "Veuillez recharger votre shell avec la commande : source $SHELL_RC"
