@@ -28,19 +28,6 @@ import netifaces as ni
 from simple_term_menu import TerminalMenu
 
 
-
-    
-def Xclip():
-    
-    if os.system("command -v xclip > /dev/null 2>&1") != 0:
-        print("xclip is not installed. Installing...")
-        # Installer xclip avec apt
-        os.system("sudo apt update")
-        os.system("sudo apt install xclip")
-        print("xclip has been installed.")
-    #os.system("clear")
-
-
 # Géstion de la syntaxe
 def Syntaxe(OS,IPHOST,selected_file,selected_port):
     if OS == "Linux":
@@ -154,7 +141,6 @@ def MenuGeneral():
 
 
 def main():
-    Xclip()
     OS, IPHOST, selected_file, selected_port = MenuGeneral()
     Syntaxe(OS, IPHOST, selected_file,selected_port)
 
