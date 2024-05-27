@@ -24,8 +24,8 @@ case $CURRENT_SHELL in
         ;;
 esac
 #Vérif si l'alias éxiste déja
-echo "test alias"
 if ! grep -Fxq "$ALIAS_UPLOADER" "$UPLOADER_FILE"; then
     echo "$ALIAS_UPLOADER" >> "$CURRENT_SHELL"
 fi
+source "$CURRENT_SHELL"
 
