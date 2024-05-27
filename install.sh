@@ -22,9 +22,10 @@ if [ -n "$EXEGOL_START_SHELL" ]; then
     CURRENT_SHELL="$EXEGOL_START_SHELL"
     
 else
-    #Sinon recherche du Shell actif
+    #Sinon
     CURRENT_SHELL="$SHELL"
 fi
+    #recherche du Shell actif
     case $CURRENT_SHELL in
         */bash)
             CURRENT_SHELL="$HOME/.bashrc"
