@@ -17,26 +17,31 @@ UPLOADER_FILE="/opt/tools/uploader/uploader.py"
 #Formatage de l'alias
 ALIAS_UPLOADER="alias uploader='python3 $UPLOADER_FILE'"
 
-#Recherche du Shell actif
-CURRENT_SHELL="$SHELL"
-case $CURRENT_SHELL in
-    */bash)
-        CURRENT_SHELL="$HOME/.bashrc"
-        ;;
-        */spawn.sh) #Pour Exegol
-        CURRENT_SHELL="$HOME/.zshrc"
-        ;;
-    */zsh)
-        CURRENT_SHELL="$HOME/.zshrc"
-        ;;
-    */sh)
-        CURRENT_SHELL="$HOME/.profile"
-        ;;
-    *)
-        echo "Shell non pris en charge : $CURRENT_SHELL"
-        exit 1
-        ;;
-esac
+#Si exegol :
+if [ -n "$EXEGOL_START_SHELL" ]; then
+    CURRENT_SHELL="$EXEGOL_START_SHELL"
+    
+else
+    #Sinon recherche du Shell actif
+    CURRENT_SHELL="$SHELL"
+fi
+    case $CURRENT_SHELL in
+        */bash)
+            CURRENT_SHELL="$HOME/.bashrc"
+            ;;
+        */zsh)
+            CURRENT_SHELL="$HOME/.zshrc"
+            ;;
+        */sh)
+            CURRENT_SHELL="$HOME/.profile"
+            ;;
+        *)
+            echo "Shell non pris en charge : $CURRENT_SHELL"
+            exit 1
+            ;;
+    esac
+
+
 
 # Vérification si l'alias existe déjà
 if grep -q "$ALIAS_UPLOADER" "$CURRENT_SHELL"; then
