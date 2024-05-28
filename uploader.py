@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-   
+
 '''
 Description :
 # Auteur : Frozenk / Christopher SIMON        
@@ -14,6 +14,7 @@ Todo :
 
 import os
 import socket
+import argparse
 import readline
 import http.server
 import socketserver
@@ -25,7 +26,7 @@ import sys
 
 # Gérer l'interruption Ctrl+C
 def signal_handler(sig, frame):
-    print('\nArret du programme ...')
+    print('\nStopping the program ...')
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -37,16 +38,16 @@ def Syntaxe(OS, IPHOST, selected_file, selected_port):
     elif OS == "Windows":
         syntaxeFinal = f'iwr http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -O {os.path.basename(selected_file)}'
     else:
-        print("/!\ Erreur : système d'exploitation non supporté")
+        print("/!\ ERROR : unsupported operating system")
         return
 
     handler_object = HTTPserv(selected_file, selected_port)
     try:
         my_server = socketserver.TCPServer(("", int(selected_port)), handler_object)
-        os.system(f"echo -n {syntaxeFinal} | xclip -selection clipboard | echo 'La commande {syntaxeFinal} est dans votre presse-papier'")
+        os.system(f"echo -n {syntaxeFinal} | xclip -selection clipboard | echo 'The command {syntaxeFinal} is in your clipboard'")
         my_server.serve_forever()
     except OSError as e:
-        print(f"/!\ Erreur : Impossible de démarrer le serveur sur le port {selected_port}. {e}")
+        print(f"/!\ ERROR : Unable to start the server on port {selected_port}. {e}")
 
 # Gestion des ports
 def check_port_in_use(IPHOST, selected_port):
@@ -58,7 +59,7 @@ def check_port_in_use(IPHOST, selected_port):
     except OSError:
         # Le port est déjà utilisé
         return True
-    # Le port est pas accéssible sans plus de droits
+    # Le port n'est pas accéssible sans plus de droits
     except PermissionError:
         print("Permission denied for port {}. Please enter a new port.".format(selected_port))
         return True
@@ -68,17 +69,17 @@ def check_port_in_use(IPHOST, selected_port):
 
 # Gestion du serveur
 def HTTPserv(selected_file, selected_port):
-    print("Lancement serveur")
+    print("Starting server")
 
     class Requester(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
             if self.path == '/' + os.path.basename(selected_file):
-                print(f"Requête pour {selected_file} reçue, envoi du fichier...")
+                print(f" Request for {selected_file} received, sending the file...")
                 self.send_response(200)
                 self.end_headers()
                 with open(selected_file, 'rb') as file:
                     self.wfile.write(file.read())
-                print(f"Fichier {selected_file} envoyé, arrêt du serveur...")
+                print(f"File {selected_file} sent, stopping the server...")
                 os._exit(0)  # Arrête le serveur
             return http.server.SimpleHTTPRequestHandler.do_GET(self)
 
@@ -92,14 +93,14 @@ def check_user_capabilities():
     if os.geteuid() == 0:
         return True
     else:
-        print("Vous devez exécuter ce script avec des privilèges root ou attribuer les capacités nécessaires au binaire Python.")
+        print("You must run this script with root privileges or assign the necessary capabilities to the Python binary.")
         return False
 
 def MenuGeneral():
     # Menu système d'exploitation de la cible :
     style = ("bg_black", "fg_yellow", "bold")
     ChoixCible = ["Linux", "Windows"]
-    terminal_menu = TerminalMenu(ChoixCible, menu_cursor="=>  ", menu_highlight_style=style, title="Quelle est la cible du téléchargement ?")
+    terminal_menu = TerminalMenu(ChoixCible, menu_cursor="=>  ", menu_highlight_style=style, title="What is the target OS?")
     menu_entry_index = terminal_menu.show()
     OS = ChoixCible[menu_entry_index]
 
@@ -115,56 +116,64 @@ def MenuGeneral():
             else:
                 ip_mappings.append(f"{interface} == No IP")
 
-        ip_menu = TerminalMenu(ip_mappings, menu_cursor="=>  ", menu_highlight_style=style, title="Choisissez une interface reseau :")
+        ip_menu = TerminalMenu(ip_mappings, menu_cursor="=>  ", menu_highlight_style=style, title="Select a network interface:")
         ip_entry_index = ip_menu.show()
         selected_ip = interfaces[ip_entry_index]
         IPHOST = ni.ifaddresses(selected_ip).get(ni.AF_INET)
         if not IPHOST:
-            print("/!\ Erreur : Aucune adresse IP trouvée pour l'interface sélectionnée. \nVeuillez sélectionner une autre interface.")
+            print("/!\ Error: No IP address found for the selected interface. \nPlease select another interface.")
             continue
         IPHOST = IPHOST[0]['addr']
         break
 
     # Menu choix du répertoire
     while True:
-        selected_directory = input("Entrez le répertoire pour la sélection de fichier : ")
+        selected_directory = input("Enter the directory for file selection : ")
         if os.path.isdir(selected_directory):
             break
         else:
-            print("Le chemin spécifié n'est pas un répertoire valide. Veuillez réessayer.")
+            print("The specified path is not a valid directory. Please try again.")
 
     # Menu choix du fichier à uploader
     try:
         selected_file = subprocess.check_output(f"cd {selected_directory} && fzf", shell=True).decode().strip()
         selected_file = os.path.join(selected_directory, selected_file)
-        print(f"Vous avez sélectionné le fichier {selected_file}!")
+        print(f"You have selected the file : {selected_file}!")
     except subprocess.CalledProcessError as e:
-        print("/!\ Erreur : Impossible de sélectionner un fichier. Assurez-vous que fzf est installé et réessayez.")
+        print("/!\  Error: Unable to select a file. try again.")
         sys.exit(1)
 
     # Menu choix du port de téléchargement
-    ChoixPort = ["80", "8080", "8000", "443", "1234", "666", "Autre Port"]
-    Port_menu = TerminalMenu(ChoixPort, menu_cursor="=>  ", menu_highlight_style=style, title="Choisissez un PORT :")
+    ChoixPort = ["80", "8080", "8000", "443", "1234", "666", "Another port"]
+    Port_menu = TerminalMenu(ChoixPort, menu_cursor="=>  ", menu_highlight_style=style, title="Select a port : ")
     Port_entry_index = Port_menu.show()
-    if ChoixPort[Port_entry_index] == "Autre Port":
-        selected_port = int(input("Veuillez entrer le port :"))
+    if ChoixPort[Port_entry_index] == "Another port":
+        selected_port = int(input("Please enter the port : "))
         while check_port_in_use(IPHOST, selected_port):
-            print(f"Le port {selected_port} est déjà utilisé ou vous n'avez pas les capacités nécessaires pour l'utiliser.")
-            selected_port = int(input("Veuillez entrer un autre PORT :"))
+            print(f"The port {selected_port} is already in use or you do not have the necessary capabilities to use it.")
+            selected_port = int(input("Please enter another port : "))
     else:
         selected_port = int(ChoixPort[Port_entry_index])
         if selected_port < 1024:
             if not check_user_capabilities():
-                print(f"Vous n'avez pas les capacités nécessaires pour utiliser le port {selected_port} !")
+                print(f"You do not have the necessary capabilities to use the port. {selected_port} !")
                 sys.exit(1)
         while check_port_in_use(IPHOST, selected_port):
-            print(f"Le port {selected_port} est déjà utilisé !")
-            selected_port = int(input("Veuillez entrer un autre PORT :"))
+            print(f"Le port {selected_port} is already in use ! ")
+            selected_port = int(input("Please enter another port : "))
 
     return OS, IPHOST, selected_file, selected_port
 
 def main():
-    OS, IPHOST, selected_file, selected_port = MenuGeneral()
+    parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.
+
+
+
+
+
+
+")
+    args = parser.parse_args()
     Syntaxe(OS, IPHOST, selected_file, selected_port)
 
 if __name__ == "__main__":
