@@ -34,22 +34,25 @@ signal.signal(signal.SIGINT, signal_handler)
 # Géstion de la syntaxe
 def Syntaxe(OS, IPHOST, selected_file, selected_port):
     style = ("bg_black", "fg_yellow", "bold")
-    if OS == "Linux" or "linux":
-        syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
-    elif OS == "Windows" or "windows":
-        syntaxeFinal = f'iwr http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -O {os.path.basename(selected_file)}'
-    else:
-        print("/!\ ERROR : unsupported operating system")
-        return
+    while True:  # Boucle pour réessayer avec un nouveau port en cas d'échec
+        if OS == "Linux" or OS == "linux":  # Correction de la condition
+            syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
+        elif OS == "Windows" or OS == "windows":  # Correction de la condition
+            syntaxeFinal = f'iwr http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -O {os.path.basename(selected_file)}'
+        else:
+            print("/!\ ERROR : unsupported operating system")
+            return
 
-    handler_object = HTTPserv(selected_file, selected_port)
-    try:
-        my_server = socketserver.TCPServer(("", int(selected_port)), handler_object)
-        os.system(f"echo -n {syntaxeFinal} | xclip -selection clipboard | echo 'The command {syntaxeFinal} is in your clipboard'")
-        my_server.serve_forever()
-    except OSError as e:
-        print(f"/!\ \033[91mERROR\033[0m : Unable to start the server on port {selected_port}. {e}")
-        selected_port = IP_menu(IPHOST, style) 
+        handler_object = HTTPserv(selected_file, selected_port)
+        try:
+            my_server = socketserver.TCPServer(("", int(selected_port)), handler_object)
+            os.system(f"echo -n {syntaxeFinal} | xclip -selection clipboard | echo 'The command {syntaxeFinal} is in your clipboard'")
+            my_server.serve_forever()
+        except OSError as e:
+            print(f"/!\ \033[91mERROR\033[0m : Unable to start the server on port {selected_port}. {e}")
+            selected_port = IP_menu(IPHOST, style) 
+        else:
+            break  # Sortir de la boucle si le serveur démarre avec succès
         
 
 # Gestion des ports
