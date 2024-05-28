@@ -192,7 +192,8 @@ def MenuGeneral(os_arg=None, dir_arg=None, port=None):
     return OS, IPHOST, selected_file, selected_port
 
 def main():
-    parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.")
+    parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.",
+                                 epilog="Example:\n  python3 uploader.py --port 8081 --os linux --dir /tmp")
     parser.add_argument("--port", type=int, help="Specify the port to use.")
     parser.add_argument("--os", type=str, help="Specify the target operating system. (Linux or Windows)")
     parser.add_argument("--dir", type=str, help="Specify the directory of your file.")
