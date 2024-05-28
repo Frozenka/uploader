@@ -1,3 +1,4 @@
 netifaces
 simple_term_menu
 colorama
+readline
