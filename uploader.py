@@ -165,15 +165,9 @@ def MenuGeneral():
     return OS, IPHOST, selected_file, selected_port
 
 def main():
-    parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.
-
-
-
-
-
-
-")
+    parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.")
     args = parser.parse_args()
+    OS, IPHOST, selected_file, selected_port = MenuGeneral()
     Syntaxe(OS, IPHOST, selected_file, selected_port)
 
 if __name__ == "__main__":
