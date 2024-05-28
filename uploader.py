@@ -33,6 +33,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # Géstion de la syntaxe
 def Syntaxe(OS, IPHOST, selected_file, selected_port):
+    style = ("bg_black", "fg_yellow", "bold")
     if OS == "Linux" or "linux":
         syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
     elif OS == "Windows" or "windows":
@@ -47,7 +48,8 @@ def Syntaxe(OS, IPHOST, selected_file, selected_port):
         os.system(f"echo -n {syntaxeFinal} | xclip -selection clipboard | echo 'The command {syntaxeFinal} is in your clipboard'")
         my_server.serve_forever()
     except OSError as e:
-        print(f"/!\ ERROR : Unable to start the server on port {selected_port}. {e}")
+        print(f"/!\ \033[91mERROR\033[0m : Unable to start the server on port {selected_port}. {e}")
+        selected_port = IP_menu(IPHOST, style) 
         
 
 # Gestion des ports
@@ -192,6 +194,8 @@ def main():
     parser.add_argument("--os", type=str, help="Specify the target operating system. (Linux or Windows)")
     parser.add_argument("--dir", type=str, help="Specify the directory of your file.")
     args = parser.parse_args()
+   
+   
     OS, IPHOST, selected_file, selected_port = MenuGeneral(args.os, args.dir, args.port)
     Syntaxe(OS, IPHOST, selected_file, selected_port)
 
