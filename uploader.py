@@ -228,7 +228,7 @@ def MenuGeneral(os_arg=None, dir_arg=None, port=None,payload_arg=None,Output_arg
             if ChoixOutput[Output_entry_index] == "Change name":
                 Output = input("Enter the new name : ")
             else:
-                Output = Output_entry_index
+                Output = os.path.basename(selected_file)
         else:
             Output = Output_arg
         
