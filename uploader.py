@@ -48,6 +48,7 @@ def Syntaxe(OS, IPHOST, selected_file, selected_port):
         my_server.serve_forever()
     except OSError as e:
         print(f"/!\ ERROR : Unable to start the server on port {selected_port}. {e}")
+        
 
 # Gestion des ports
 def check_port_in_use(IPHOST, selected_port):
@@ -107,6 +108,31 @@ def OS_menu(os_arg=None):
         terminal_menu = TerminalMenu(target_OS, menu_cursor="=>  ", menu_highlight_style=style, title="What is the target OS?")
         menu_entry_index = terminal_menu.show()
         return target_OS[menu_entry_index]
+    
+
+def IP_menu(IPHOST, style, port=None):
+    if port is not None:
+        return port
+    
+    while True:
+        ChoixPort = ["80", "8080", "8000", "443", "1234", "666", "Another port"]
+        Port_menu = TerminalMenu(ChoixPort, menu_cursor="=>  ", menu_highlight_style=style, title="Select a port : ")
+        Port_entry_index = Port_menu.show()
+        if ChoixPort[Port_entry_index] == "Another port":
+            selected_port = int(input("Please enter the port : "))
+            while check_port_in_use(IPHOST, selected_port):
+                print(f"The port {selected_port} is already in use or you do not have the necessary capabilities to use it.")
+                selected_port = int(input("Please enter another port : "))
+        else:
+            selected_port = int(ChoixPort[Port_entry_index])
+            if selected_port < 1024:
+                if not check_user_capabilities():
+                    print(f"You do not have the necessary capabilities to use the port. {selected_port} !")
+                selected_port = int(input("Please enter another port : "))
+            while check_port_in_use(IPHOST, selected_port):
+                print(f"The port {selected_port} is already in use!")
+                selected_port = int(input("Please enter another port : "))
+        return selected_port
 
 def MenuGeneral(os_arg=None, dir_arg=None, port=None):
     style = ("bg_black", "fg_yellow", "bold")
@@ -155,27 +181,8 @@ def MenuGeneral(os_arg=None, dir_arg=None, port=None):
         print("/!\  Error: Unable to select a file. try again.")
         sys.exit(1)
 
-    # Menu choix du port de téléchargement
-    if port is not None:
-        selected_port = port
-    else:
-        ChoixPort = ["80", "8080", "8000", "443", "1234", "666", "Another port"]
-        Port_menu = TerminalMenu(ChoixPort, menu_cursor="=>  ", menu_highlight_style=style, title="Select a port : ")
-        Port_entry_index = Port_menu.show()
-        if ChoixPort[Port_entry_index] == "Another port":
-            selected_port = int(input("Please enter the port : "))
-            while check_port_in_use(IPHOST, selected_port):
-                print(f"The port {selected_port} is already in use or you do not have the necessary capabilities to use it.")
-                selected_port = int(input("Please enter another port : "))
-        else:
-            selected_port = int(ChoixPort[Port_entry_index])
-            if selected_port < 1024:
-                if not check_user_capabilities():
-                    print(f"You do not have the necessary capabilities to use the port. {selected_port} !")
-                    sys.exit(1)
-            while check_port_in_use(IPHOST, selected_port):
-                print(f"Le port {selected_port} is already in use ! ")
-                selected_port = int(input("Please enter another port : "))
+ 
+    selected_port = IP_menu(IPHOST, style, port)
 
     return OS, IPHOST, selected_file, selected_port
 
