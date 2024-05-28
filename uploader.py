@@ -195,7 +195,7 @@ def main():
     parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.",
                                  epilog="Example:\n  python3 uploader.py --port 8081 --os linux --dir /tmp")
     parser.add_argument("--port","-p", type=int, help="Specify the port to use.")
-    parser.add_argument("--os", type=str, help="Specify the target operating system. (Linux or Windows)")
+    parser.add_argument("--os","-os", type=str, help="Specify the target operating system. (Linux or Windows)")
     parser.add_argument("--dir","-d", type=str, help="Specify the directory of your file.")
     args = parser.parse_args()
    
