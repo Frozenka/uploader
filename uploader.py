@@ -127,7 +127,7 @@ def MenuGeneral():
 
     # Menu choix du répertoire
     while True:
-        selected_directory = input("Entrez le répertoire de départ pour la sélection de fichier avec fzf : ")
+        selected_directory = input("Entrez le répertoire pour la sélection de fichier : ")
         if os.path.isdir(selected_directory):
             break
         else:
