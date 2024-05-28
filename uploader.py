@@ -33,9 +33,9 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # Géstion de la syntaxe
 def Syntaxe(OS, IPHOST, selected_file, selected_port):
-    if OS == "Linux":
+    if OS == "Linux" or "linux":
         syntaxeFinal = f'wget http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
-    elif OS == "Windows":
+    elif OS == "Windows" or "windows":
         syntaxeFinal = f'iwr http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)} -O {os.path.basename(selected_file)}'
     else:
         print("/!\ ERROR : unsupported operating system")
@@ -95,14 +95,22 @@ def check_user_capabilities():
     else:
         print("You must run this script with root privileges or assign the necessary capabilities to the Python binary.")
         return False
-
-def MenuGeneral():
+    
+def OS_menu(os_arg=None):
     # Menu système d'exploitation de la cible :
+    if os_arg is not None:
+        return os_arg
+    else:
+        # Menu système d'exploitation de la cible :
+        style = ("bg_black", "fg_yellow", "bold")
+        target_OS = ["Linux", "Windows"]
+        terminal_menu = TerminalMenu(target_OS, menu_cursor="=>  ", menu_highlight_style=style, title="What is the target OS?")
+        menu_entry_index = terminal_menu.show()
+        return target_OS[menu_entry_index]
+
+def MenuGeneral(os_arg=None, dir_arg=None, port=None):
     style = ("bg_black", "fg_yellow", "bold")
-    ChoixCible = ["Linux", "Windows"]
-    terminal_menu = TerminalMenu(ChoixCible, menu_cursor="=>  ", menu_highlight_style=style, title="What is the target OS?")
-    menu_entry_index = terminal_menu.show()
-    OS = ChoixCible[menu_entry_index]
+    OS = OS_menu(os_arg)
 
     # Menu choix de l'interface réseau
     while True:
@@ -127,14 +135,18 @@ def MenuGeneral():
         break
 
     # Menu choix du répertoire
-    while True:
-        selected_directory = input("Enter the directory for file selection : ")
-        if os.path.isdir(selected_directory):
-            break
-        else:
-            print("The specified path is not a valid directory. Please try again.")
+    if dir_arg is None:
+        while True:
+            selected_directory = input("Enter the directory for file selection : ")
+            if os.path.isdir(selected_directory):
+                break
+            else:
+                print("The specified path is not a valid directory. Please try again.")
+    else:
+        selected_directory = dir_arg
 
     # Menu choix du fichier à uploader
+    
     try:
         selected_file = subprocess.check_output(f"cd {selected_directory} && fzf", shell=True).decode().strip()
         selected_file = os.path.join(selected_directory, selected_file)
@@ -144,30 +156,36 @@ def MenuGeneral():
         sys.exit(1)
 
     # Menu choix du port de téléchargement
-    ChoixPort = ["80", "8080", "8000", "443", "1234", "666", "Another port"]
-    Port_menu = TerminalMenu(ChoixPort, menu_cursor="=>  ", menu_highlight_style=style, title="Select a port : ")
-    Port_entry_index = Port_menu.show()
-    if ChoixPort[Port_entry_index] == "Another port":
-        selected_port = int(input("Please enter the port : "))
-        while check_port_in_use(IPHOST, selected_port):
-            print(f"The port {selected_port} is already in use or you do not have the necessary capabilities to use it.")
-            selected_port = int(input("Please enter another port : "))
+    if port is not None:
+        selected_port = port
     else:
-        selected_port = int(ChoixPort[Port_entry_index])
-        if selected_port < 1024:
-            if not check_user_capabilities():
-                print(f"You do not have the necessary capabilities to use the port. {selected_port} !")
-                sys.exit(1)
-        while check_port_in_use(IPHOST, selected_port):
-            print(f"Le port {selected_port} is already in use ! ")
-            selected_port = int(input("Please enter another port : "))
+        ChoixPort = ["80", "8080", "8000", "443", "1234", "666", "Another port"]
+        Port_menu = TerminalMenu(ChoixPort, menu_cursor="=>  ", menu_highlight_style=style, title="Select a port : ")
+        Port_entry_index = Port_menu.show()
+        if ChoixPort[Port_entry_index] == "Another port":
+            selected_port = int(input("Please enter the port : "))
+            while check_port_in_use(IPHOST, selected_port):
+                print(f"The port {selected_port} is already in use or you do not have the necessary capabilities to use it.")
+                selected_port = int(input("Please enter another port : "))
+        else:
+            selected_port = int(ChoixPort[Port_entry_index])
+            if selected_port < 1024:
+                if not check_user_capabilities():
+                    print(f"You do not have the necessary capabilities to use the port. {selected_port} !")
+                    sys.exit(1)
+            while check_port_in_use(IPHOST, selected_port):
+                print(f"Le port {selected_port} is already in use ! ")
+                selected_port = int(input("Please enter another port : "))
 
     return OS, IPHOST, selected_file, selected_port
 
 def main():
     parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.")
+    parser.add_argument("--port", type=int, help="Specify the port to use.")
+    parser.add_argument("--os", type=str, help="Specify the target operating system. (Linux or Windows)")
+    parser.add_argument("--dir", type=str, help="Specify the directory of your file.")
     args = parser.parse_args()
-    OS, IPHOST, selected_file, selected_port = MenuGeneral()
+    OS, IPHOST, selected_file, selected_port = MenuGeneral(args.os, args.dir, args.port)
     Syntaxe(OS, IPHOST, selected_file, selected_port)
 
 if __name__ == "__main__":
