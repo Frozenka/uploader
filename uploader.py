@@ -3,11 +3,11 @@
 '''
 Description :
 # Author: Charlie BROMBERG (Shutdown - @_nwodtuhs)
-# Auteur : Frozenk / Christopher SIMON 
+# Auteur : Frozenk / Christopher SIMON
 # Author: Amine B (en1ma - @_1mean)
 # ֆŋσσƥყ
 
-Le script a été développé,Et il s'est avéré qu'un script très similaire, disponible sur (https://github.com/ShutdownRepo/uberfile), 
+Le script a été développé,Et il s'est avéré qu'un script très similaire, disponible sur (https://github.com/ShutdownRepo/uberfile),
 existait déjà. Nous avons donc décidé de fusionner les meilleurs aspects des deux.
 
 '''
@@ -31,7 +31,6 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 def autocompletion(text, state):
-    
     if text.startswith("~"):
         text = os.path.expanduser("~") + text[1:]
 
@@ -43,7 +42,7 @@ def autocompletion(text, state):
 
     suggestions = os.listdir(directory) if os.path.isdir(directory) else []
     matching = [os.path.join(directory, f) for f in suggestions if f.startswith(prefix)]
-    matching = [f + ("/" if os.path.isdir(f) else " ") for f in matching]
+    matching = [f + ("/" if os.path.isdir(f) else "") for f in matching]
 
     try:
         return matching[state]
@@ -54,7 +53,14 @@ def get_directory_input(prompt):
     readline.set_completer_delims(' \t\n;')
     readline.parse_and_bind("tab: complete")
     readline.set_completer(autocompletion)
-    return input(prompt)
+    while True:
+        path_input = input(prompt)
+        if os.path.exists(path_input):
+            if os.path.isdir(path_input):
+                return path_input, True
+            elif os.path.isfile(path_input):
+                return path_input, False
+        print("The specified path is not a valid directory or file. Please try again.")
 
 def check_port_in_use(IPHOST, selected_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -172,19 +178,14 @@ def MenuGeneral(os_arg=None, dir_arg=None, port_arg=None, payload_arg=None, Outp
     IPHOST = ni.ifaddresses(selected_interface).get(ni.AF_INET)[0]['addr']
 
     if dir_arg is None:
-        selected_directory = get_directory_input("Enter the directory for file selection: ")
-        while not os.path.isdir(selected_directory):
-            print("The specified path is not a valid directory. Please try again.")
-            selected_directory = get_directory_input("Enter the directory for file selection: ")
+        selected_path, is_directory = get_directory_input("Enter the directory or file for selection: ")
+        if is_directory:
+            selected_file = subprocess.check_output(f"cd {selected_path} && fzf", shell=True).decode().strip()
+            selected_file = os.path.join(selected_path, selected_file)
+        else:
+            selected_file = selected_path
     else:
-        selected_directory = dir_arg
-    try:
-        selected_file = subprocess.check_output(f"cd {selected_directory} && fzf", shell=True).decode().strip()
-        selected_file = os.path.join(selected_directory, selected_file)
-    except subprocess.CalledProcessError:
-        print("Error: Unable to select a file. Try again.")
-        sys.exit(1)
-
+        selected_file = dir_arg
     if port_arg is None:
         selected_port = IP_menu(IPHOST, style)
     else:
