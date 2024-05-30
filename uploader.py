@@ -159,7 +159,7 @@ def start_http_server(selected_file, IPHOST, selected_port, download_command, Ou
         print(f"Server started at {IPHOST}:{selected_port}")
         httpd.serve_forever()
 
-def MenuGeneral(os_arg=None, dir_arg=None, port_arg=None, payload_arg=None, Output_arg=None):
+def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Output_arg=None):
     style = ("bg_black", "fg_yellow", "bold")
     OS, Payload = OS_menu(os_arg, payload_arg)
 
@@ -177,7 +177,7 @@ def MenuGeneral(os_arg=None, dir_arg=None, port_arg=None, payload_arg=None, Outp
     selected_interface = interfaces[ip_entry_index]
     IPHOST = ni.ifaddresses(selected_interface).get(ni.AF_INET)[0]['addr']
 
-    if dir_arg is None:
+    if file_arg is None:
         selected_path, is_directory = get_directory_input("Enter the directory or file for selection: ")
         if is_directory:
             selected_file = subprocess.check_output(f"cd {selected_path} && fzf", shell=True).decode().strip()
@@ -185,7 +185,7 @@ def MenuGeneral(os_arg=None, dir_arg=None, port_arg=None, payload_arg=None, Outp
         else:
             selected_file = selected_path
     else:
-        selected_file = dir_arg
+        selected_file = file_arg
     if port_arg is None:
         selected_port = IP_menu(IPHOST, style)
     else:
@@ -209,12 +209,12 @@ def main():
     parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.")
     parser.add_argument("--port", "-p", type=int, help="Specify the port to use.")
     parser.add_argument("--os", "-os", type=str, help="Specify the target operating system. (Linux or Windows)")
-    parser.add_argument("--dir", "-d", type=str, help="Specify the directory of your file.")
+    parser.add_argument("--file", "-f", type=str, help="Specify the upload file.")
     parser.add_argument("--output", "-o", type=str, help="File to write on the target machine.")
     parser.add_argument("--payload", "-py", type=str, help="Type of Payload.")
     args = parser.parse_args()
 
-    OS, IPHOST, selected_file, selected_port, Payload, Output = MenuGeneral(args.os, args.dir, args.port, args.payload, args.output)
+    OS, IPHOST, selected_file, selected_port, Payload, Output = MenuGeneral(args.os, args.file, args.port, args.payload, args.output)
     download_command = generate_download_command(OS, IPHOST, selected_file, selected_port, Payload, Output)
     start_http_server(selected_file, IPHOST, selected_port, download_command, Output)
 
