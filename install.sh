@@ -2,7 +2,13 @@
 
 # Téléchargement du git et installation des requirements
 mkdir -p /opt/tools
-git clone https://github.com/Frozenka/uploader.git /opt/tools/uploader
+if [ -d "/opt/tools/uploader" ]; then
+    echo "Mise à jour du dossier uploader."
+    git -C /opt/tools/uploader pull
+else
+    echo "Clonage du dépôt."
+    git clone https://github.com/Frozenka/uploader.git /opt/tools/uploader
+fi
 pip3 install -r /opt/tools/uploader/requirements.txt
 
 # Gestion Xclip
