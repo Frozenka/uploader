@@ -22,8 +22,10 @@ Run the following command:
 --os, -os : Specify the target operating system (Linux or Windows).
 --file, -f : Specify the file to upload.
 --output, -o : Specify the output file on the target machine.
---payload, -py : Specify the type of payload (wget, curl, etc.).
+--payload, -py : Specify the type of payload (Curl Wget Certutil Powershell Bitsadmin Regsvr32).
 ```
+
+
 
 Example:
 `uploader --port 8080 --os Linux --file /path/to/file --output output_file --payload Curl`
@@ -64,7 +66,7 @@ Lancez la commande suivante :
 --os, -os       : Spécifiez le système d'exploitation cible (Linux ou Windows).
 --file, -f      : Spécifiez le fichier à télécharger.
 --output, -o    : Spécifiez le fichier de sortie sur la machine cible.
---payload, -py  : Spécifiez le type de payload (wget, curl, etc.).
+--payload, -py  : Spécifiez le type de payload (Curl Wget Certutil Powershell Bitsadmin Regsvr32).
 ```
 
 Exemple:
