@@ -15,8 +15,8 @@ existait déjà. Nous avons donc décidé de fusionner les meilleurs aspects des
 import os
 import socket
 import argparse
-import platform
-import readline
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import Completer, Completion
 import http.server
 import socketserver
 import subprocess
@@ -24,6 +24,7 @@ import netifaces as ni
 from simple_term_menu import TerminalMenu
 import signal
 import sys
+import threading
 
 def signal_handler(sig, frame):
     print('\nStopping the program ...')
@@ -31,34 +32,26 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-def autocompletion(text, state):
-    if text.startswith("~"):
-        text = os.path.expanduser("~") + text[1:]
+class autocompletion(Completer):
+    def get_completions(self, document, complete_event):
+        text = document.text_before_cursor
+        if text.startswith("~"):
+            text = os.path.expanduser("~") + text[1:]
+        if os.path.isdir(text):
+            directory = text
+            prefix = ""
+        else:
+            directory, prefix = os.path.split(text)
+        suggestions = os.listdir(directory) if os.path.isdir(directory) else []
+        matching = [os.path.join(directory, f) for f in suggestions if f.startswith(prefix)]
+        matching = [f + ("/" if os.path.isdir(f) else "") for f in matching]
+        for m in matching:
+            yield Completion(m, start_position=-len(text), display=m)
 
-    if os.path.isdir(text):
-        directory = text
-        prefix = ""
-    else:
-        directory, prefix = os.path.split(text)
-
-    suggestions = os.listdir(directory) if os.path.isdir(directory) else []
-    matching = [os.path.join(directory, f) for f in suggestions if f.startswith(prefix)]
-    matching = [f + ("/" if os.path.isdir(f) else "") for f in matching]
-
-    try:
-        return matching[state]
-    except IndexError:
-        return None
-
-def get_directory_input(prompt):
-    if 'arm' in platform.machine().lower():
-        print("System ARM")
-    else:
-        readline.set_completer_delims(' \t\n;')
-        readline.parse_and_bind("tab: complete")
-        readline.set_completer(autocompletion)
+def get_directory_input(prompt_text):
+    completer = autocompletion()
     while True:
-        path_input = input(prompt)
+        path_input = prompt(prompt_text, completer=completer)
         if os.path.exists(path_input):
             if os.path.isdir(path_input):
                 return path_input, True
@@ -112,7 +105,7 @@ def IP_menu(IPHOST, style):
         Port_menu = TerminalMenu(ChoixPort, menu_cursor="=>  ", menu_highlight_style=style, title="Select a port : ")
         Port_entry_index = Port_menu.show()
         if ChoixPort[Port_entry_index] == "Another port":
-            selected_port = int(input("Please enter the port : "))
+            selected_port = int(prompt("Please enter the port : "))
         else:
             selected_port = int(ChoixPort[Port_entry_index])
 
@@ -150,6 +143,7 @@ def start_http_server(selected_file, IPHOST, selected_port, download_command, Ou
                     with open(selected_file, 'rb') as file:
                         self.wfile.write(file.read())
                     print("File sent successfully.")
+                    threading.Thread(target=self.server.shutdown).start()
                 except IOError as e:
                     self.send_error(404, "File Not Found: %s" % self.path)
             else:
@@ -161,7 +155,12 @@ def start_http_server(selected_file, IPHOST, selected_port, download_command, Ou
 
     with socketserver.TCPServer((IPHOST, selected_port), CustomHTTPRequestHandler) as httpd:
         print(f"Server started at {IPHOST}:{selected_port}")
+        httpd.selected_file = selected_file
+        
         httpd.serve_forever()
+
+        print('\nStopping the program ...')
+        sys.exit(1)
 
 def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Output_arg=None):
     style = ("bg_black", "fg_yellow", "bold")
@@ -184,8 +183,13 @@ def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Out
     if file_arg is None:
         selected_path, is_directory = get_directory_input("Enter the directory or file for selection: ")
         if is_directory:
-            selected_file = subprocess.check_output(f"cd {selected_path} && fzf", shell=True).decode().strip()
-            selected_file = os.path.join(selected_path, selected_file)
+            try:
+                selected_file = subprocess.check_output(f"cd {selected_path} && fzf", shell=True).decode().strip()
+                selected_file = os.path.join(selected_path, selected_file)
+            except subprocess.CalledProcessError as e:
+                print(f"An error occurred: {e}")
+                print('\nStopping the program ...')
+                sys.exit(1)
         else:
             selected_file = selected_path
     else:
@@ -201,7 +205,7 @@ def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Out
     needs_output = ["Curl", "Iwr", "Certutil", "Bitsadmin"]
     if Payload in needs_output:
         if Output_arg is None:
-            Output = input("Enter the filename to write on the target machine: ")
+            Output = prompt("Enter the filename to write on the target machine: ")
         else:
             Output = Output_arg
     else:
