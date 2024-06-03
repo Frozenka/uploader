@@ -15,6 +15,7 @@ existait déjà. Nous avons donc décidé de fusionner les meilleurs aspects des
 import os
 import socket
 import argparse
+import platform
 import readline
 import http.server
 import socketserver
@@ -50,9 +51,12 @@ def autocompletion(text, state):
         return None
 
 def get_directory_input(prompt):
-    readline.set_completer_delims(' \t\n;')
-    readline.parse_and_bind("tab: complete")
-    readline.set_completer(autocompletion)
+    if 'arm' in platform.machine().lower():
+        print("System ARM")
+    else:
+        readline.set_completer_delims(' \t\n;')
+        readline.parse_and_bind("tab: complete")
+        readline.set_completer(autocompletion)
     while True:
         path_input = input(prompt)
         if os.path.exists(path_input):
