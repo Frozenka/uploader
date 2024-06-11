@@ -1,6 +1,6 @@
 # Uploader
 ## English :
-Uploader is now integrated into [Exegol](https://github.com/ThePorgs/Exegol).
+Uploader is now integrated into <a href="https://github.com/ThePorgs/Exegol" target="_blank">Exegol</a>. <br>
 This Python script allows you to quickly upload files to a remote machine based on the target operating system (Linux or Windows). It automatically generates the appropriate download command based on the request (Curl, Wget, Certutil, Powershell, etc.) and opens a local Python server to provide the file for download until an HTTP 200 response is received, after which the server shuts down.
 
 ![uploader](https://github.com/Frozenka/uploader/assets/13807685/b0bc7142-8a30-4cc7-8162-8c9145047973)
@@ -43,7 +43,7 @@ Contributions in the form of bug reports, suggestions, or feature requests are w
 
 ---------------------------------------------------------------------
 ## French :
-Uploader est maintenant intégré à [Exegol](https://github.com/ThePorgs/Exegol).
+Uploader est maintenant intégré à <a href="https://github.com/ThePorgs/Exegol" target="_blank">Exegol</a>.<br>
 Ce script Python vous permet de télécharger des fichiers sur une machine distante de manière rapide en fonction du système d'exploitation cible (Linux ou Windows). 
 Il génère automatiquement la commande de téléchargement appropriée en fonction de la demande ( Curl, Wget, Certutil,Powershel ect..) et ouvre un serveur Python local pour fournir le fichier à télécharger jusqu'à ce qu'une réponse HTTP 200 soit reçue, 
 puis le serveur se ferme.
