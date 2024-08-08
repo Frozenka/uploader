@@ -1,4 +1,5 @@
 # Uploader
+![logo](https://hacking-france.fr/wp-content/uploads/2024/08/OIG3.hB36-150x150.jpg)
 ## English :
 Uploader is now integrated into <a href="https://github.com/ThePorgs/Exegol" target="_blank">Exegol</a>. <br>
 This Python script allows you to quickly upload files to a remote machine based on the target operating system (Linux or Windows). It automatically generates the appropriate download command based on the request (Curl, Wget, Certutil, Powershell, etc.) and opens a local Python server to provide the file for download until an HTTP 200 response is received, after which the server shuts down.
