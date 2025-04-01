@@ -3,9 +3,9 @@
 '''
 Description :
 # Author: Charlie BROMBERG (Shutdown - @_nwodtuhs)
-# Auteur : Frozenk / Christopher SIMON
+# Auteur : Frozenk / Christopher SIMON alias la reine des neiges
 # Author: Amine B (en1ma - @_1mean)
-# ֆŋσσƥყ
+# Author: ֆŋσσƥყ / Maxime Morin
 
 Le script a été développé,Et il s'est avéré qu'un script très similaire, disponible sur (https://github.com/ShutdownRepo/uberfile),
 existait déjà. Nous avons donc décidé de fusionner les meilleurs aspects des deux.
@@ -15,16 +15,19 @@ existait déjà. Nous avons donc décidé de fusionner les meilleurs aspects des
 import os
 import socket
 import argparse
-from prompt_toolkit import prompt
-from prompt_toolkit.completion import Completer, Completion
 import http.server
 import socketserver
 import subprocess
 import netifaces as ni
-from simple_term_menu import TerminalMenu
 import signal
 import sys
 import threading
+
+from prompt_toolkit import prompt, PromptSession
+from prompt_toolkit.completion import Completer, Completion
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.patch_stdout import patch_stdout
+from simple_term_menu import TerminalMenu
 
 def signal_handler(sig, frame):
     print('\nStopping the program ...')
@@ -114,6 +117,17 @@ def IP_menu(IPHOST, style):
         else:
             print("The port {} is already in use. Please select another port.".format(selected_port))
 
+def payload_requires_output(os_name: str, payload: str) -> bool:
+    os_name = os_name.lower()
+    payload = payload.lower()
+
+    if os_name == "linux":
+        return payload in ["curl"]
+
+    if os_name == "windows":
+        return payload in ["iwr", "certutil", "wget", "bitsadmin"]
+
+    return False
 def generate_download_command(OS, IPHOST, selected_file, selected_port, Payload, Output=None):
     base_url = f'http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
     if OS.lower() == "linux":
@@ -149,14 +163,14 @@ def start_http_server(selected_file, IPHOST, selected_port, download_command, Ou
             else:
                 self.send_error(404, "File Not Found: %s" % self.path)
 
-    command_to_clip = download_command if Output else download_command.split('-OutFile')[0].strip()
+    command_to_clip = download_command
     os.system(f"echo -n '{command_to_clip}' | xclip -selection clipboard")
     print(f"The command '{command_to_clip}' has been copied to your clipboard.")
 
     with socketserver.TCPServer((IPHOST, selected_port), CustomHTTPRequestHandler) as httpd:
         print(f"Server started at {IPHOST}:{selected_port}")
         httpd.selected_file = selected_file
-        
+
         httpd.serve_forever()
 
         print('\nStopping the program ...')
@@ -164,54 +178,186 @@ def start_http_server(selected_file, IPHOST, selected_port, download_command, Ou
 
 def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Output_arg=None):
     style = ("bg_black", "fg_yellow", "bold")
-    OS, Payload = OS_menu(os_arg, payload_arg)
+    session = PromptSession()
+    key_bindings = KeyBindings()
 
-    interfaces = ni.interfaces()
-    ip_mappings = []
-    for interface in interfaces:
-        ip_info = ni.ifaddresses(interface).get(ni.AF_INET)
-        if ip_info:
-            ip_address = ip_info[0]['addr']
-            ip_mappings.append(f"{interface} == {ip_address}")
-        else:
-            ip_mappings.append(f"{interface} == No IP")
-    ip_menu = TerminalMenu(ip_mappings, menu_cursor="=>  ", menu_highlight_style=style, title="Select a network interface:")
-    ip_entry_index = ip_menu.show()
-    selected_interface = interfaces[ip_entry_index]
-    IPHOST = ni.ifaddresses(selected_interface).get(ni.AF_INET)[0]['addr']
+    class StepBack(Exception):
+        pass
 
-    if file_arg is None:
-        selected_path, is_directory = get_directory_input("Enter the directory or file for selection: ")
-        if is_directory:
-            try:
-                selected_file = subprocess.check_output(f"cd {selected_path} && fzf", shell=True).decode().strip()
-                selected_file = os.path.join(selected_path, selected_file)
-            except subprocess.CalledProcessError as e:
-                print(f"An error occurred: {e}")
-                print('\nStopping the program ...')
-                sys.exit(1)
-        else:
-            selected_file = selected_path
-    else:
-        selected_file = file_arg
-    if port_arg is None:
-        selected_port = IP_menu(IPHOST, style)
-    else:
-        selected_port = port_arg
-        if check_port_in_use(IPHOST, selected_port):
-            print("The port {} is already in use. Please select another port.".format(selected_port))
-            selected_port = IP_menu(IPHOST, style)
+    @key_bindings.add('escape')
+    def _(event):
+        event.app.exit(result="__stepback__")
 
-    needs_output = ["Curl", "Iwr", "Certutil", "Bitsadmin"]
-    if Payload in needs_output:
-        if Output_arg is None:
-            Output = prompt("Enter the filename to write on the target machine: ")
-        else:
-            Output = Output_arg
-    else:
-        Output = None
+    step = 0
+    OS = Payload = IPHOST = selected_file = selected_port = Output = None
 
-    return OS, IPHOST, selected_file, selected_port, Payload, Output
+    while True:
+        try:
+            if step <= 0:
+                if os_arg:
+                    OS = os_arg
+                else:
+                    os_menu = TerminalMenu(["Linux", "Windows"], menu_cursor="=>  ", menu_highlight_style=style, title="What is the target OS?")
+                    os_index = os_menu.show()
+                    if os_index is None:
+                        continue
+                    OS = ["Linux", "Windows"][os_index]
+
+                if payload_arg:
+                    Payload = payload_arg
+                else:
+                    if OS.lower() == "linux":
+                        payload_type = ["Wget", "Curl"]
+                    elif OS.lower() == "windows":
+                        payload_type = ["Iwr", "Certutil", "Wget", "Bitsadmin", "Regsvr32"]
+                    else:
+                        continue
+
+                    payload_menu = TerminalMenu(payload_type, menu_cursor="=>  ", menu_highlight_style=style, title="Select a payload type:")
+                    payload_index = payload_menu.show()
+                    if payload_index is None:
+                        continue
+                    Payload = payload_type[payload_index]
+
+                step = 1
+
+            if step <= 1:
+                interfaces = ni.interfaces()
+                ip_mappings = []
+                for interface in interfaces:
+                    ip_info = ni.ifaddresses(interface).get(ni.AF_INET)
+                    if ip_info:
+                        ip_address = ip_info[0]['addr']
+                        ip_mappings.append(f"{interface} == {ip_address}")
+                    else:
+                        ip_mappings.append(f"{interface} == No IP")
+
+                while True:
+                    try:
+                        ip_menu = TerminalMenu(ip_mappings, menu_cursor="=>  ", menu_highlight_style=style, title="Select a network interface:")
+                        ip_entry_index = ip_menu.show()
+                        if ip_entry_index is None:
+                            step = 0
+                            raise StepBack()
+                        selected_interface = interfaces[ip_entry_index]
+                        break
+                    except KeyboardInterrupt:
+                        sys.exit(0)
+                    except StepBack:
+                        step = 0
+                        raise StepBack()
+
+                IPHOST = ni.ifaddresses(selected_interface).get(ni.AF_INET)[0]['addr']
+                step = 2
+
+            if step <= 2:
+                if file_arg is None:
+                    try:
+                        while True:
+                            with patch_stdout():
+                                selected_path = session.prompt("Enter the directory or file for selection: ", key_bindings=key_bindings, completer=autocompletion())
+                                if selected_path == "__stepback__":
+                                    step = 1
+                                    raise StepBack()
+                                selected_path = os.path.expanduser(selected_path)
+                                if not os.path.exists(selected_path):
+                                    print("Invalid path. Please try again.")
+                                    continue
+                                break
+                        is_directory = os.path.isdir(selected_path)
+                        selected_path = os.path.expanduser(selected_path)
+                    except KeyboardInterrupt:
+                        sys.exit(0)
+
+                    if is_directory:
+                        try:
+                            selected_file = subprocess.check_output(f"cd {selected_path} && fzf", shell=True).decode().strip()
+                            selected_file = os.path.join(selected_path, selected_file)
+                        except subprocess.CalledProcessError:
+                            sys.exit(0)
+                    else:
+                        selected_file = selected_path
+                else:
+                    selected_file = file_arg
+                step = 3
+
+            if step <= 3:
+                if port_arg is None:
+                    try:
+                        while True:
+                            choix_port = ["80", "8080", "8000", "443", "1234", "666", "Another port"]
+                            port_menu = TerminalMenu(choix_port, menu_cursor="=>  ", menu_highlight_style=style, title="Select a port:")
+                            port_index = port_menu.show()
+                            if port_index is None:
+                                step = 2
+                                raise StepBack()
+                            if choix_port[port_index] == "Another port":
+                                try:
+                                    with patch_stdout():
+                                        selected_port_input = session.prompt("Please enter the port: ", key_bindings=key_bindings)
+                                        if selected_port_input == "__stepback__":
+                                            step = 2
+                                            raise StepBack()
+                                    try:
+                                        selected_port = int(selected_port_input)
+                                        if not 1 <= selected_port <= 65535:
+                                            print("Port must be between 1 and 65535.")
+                                            continue
+                                    except ValueError:
+                                        print("Invalid port. Please enter a numeric value.")
+                                        continue
+                                    break
+                                except (KeyboardInterrupt, EOFError):
+                                    sys.exit(0)
+                            else:
+                                selected_port = int(choix_port[port_index])
+                            if not check_port_in_use(IPHOST, selected_port):
+                                break
+                            print(f"The port {selected_port} is already in use. Please select another port.")
+                    except KeyboardInterrupt:
+                        sys.exit(0)
+                    except StepBack:
+                        continue
+                else:
+                    selected_port = port_arg
+                    if check_port_in_use(IPHOST, selected_port):
+                        try:
+                            print("The port {} is already in use. Please select another port.".format(selected_port))
+                            selected_port = IP_menu(IPHOST, style)
+                        except KeyboardInterrupt:
+                            sys.exit(0)
+                        except StepBack:
+                            step = 2
+                            raise StepBack()
+                step = 4
+
+            if step <= 4:
+                def requires_output(os_name, payload):
+                    return (os_name.lower(), payload.lower()) in {
+                        ("linux", "curl"),
+                        ("windows", "iwr"),
+                        ("windows", "certutil"),
+                        ("windows", "wget"),
+                        ("windows", "bitsadmin")
+                    }
+
+                if requires_output(OS, Payload):
+                    if Output_arg is None:
+                        try:
+                            with patch_stdout():
+                                Output = session.prompt("Enter the filename to write on the target machine: ", key_bindings=key_bindings)
+                                if Output == "__stepback__":
+                                    step = 3
+                                    raise StepBack()
+                        except (KeyboardInterrupt, EOFError):
+                            sys.exit(0)
+                    else:
+                        Output = Output_arg
+
+            return OS, IPHOST, selected_file, selected_port, Payload, Output
+
+        except StepBack:
+            continue
 
 def main():
     parser = argparse.ArgumentParser(description="Tool for quickly downloading files to a remote machine based on the target operating system. Launch the program and follow the prompts.")
