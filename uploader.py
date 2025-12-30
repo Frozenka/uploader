@@ -371,7 +371,8 @@ def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Out
                                 with patch_stdout():
                                     Output = session.prompt("Enter the filename to write on the target machine: ", default=default_filename, key_bindings=key_bindings)
                                     if Output == "__stepback__":
-                                        step = 3
+                                        # Stay in step 4 so that StepBack returns to the output menu
+                                        step = 4
                                         raise StepBack()
                         except (KeyboardInterrupt, EOFError):
                             sys.exit(0)
