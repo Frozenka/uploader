@@ -332,16 +332,7 @@ def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Out
                 step = 4
 
             if step <= 4:
-                def requires_output(os_name, payload):
-                    return (os_name.lower(), payload.lower()) in {
-                        ("linux", "curl"),
-                        ("windows", "iwr"),
-                        ("windows", "certutil"),
-                        ("windows", "wget"),
-                        ("windows", "bitsadmin")
-                    }
-
-                if requires_output(OS, Payload):
+                if payload_requires_output(OS, Payload):
                     if Output_arg is None:
                         try:
                             # Extract the basename from selected_file
