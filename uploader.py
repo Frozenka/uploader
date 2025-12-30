@@ -340,7 +340,7 @@ def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Out
                             
                             # Determine temp path based on OS
                             if OS.lower() == "windows":
-                                temp_path = f"C:\\Windows\\Temp\\{default_filename}"
+                                temp_path = f"%TEMP%\\{default_filename}"
                             else:
                                 temp_path = f"/tmp/{default_filename}"
                             
