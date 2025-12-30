@@ -332,23 +332,48 @@ def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Out
                 step = 4
 
             if step <= 4:
-                def requires_output(os_name, payload):
-                    return (os_name.lower(), payload.lower()) in {
-                        ("linux", "curl"),
-                        ("windows", "iwr"),
-                        ("windows", "certutil"),
-                        ("windows", "wget"),
-                        ("windows", "bitsadmin")
-                    }
-
-                if requires_output(OS, Payload):
+                if payload_requires_output(OS, Payload):
                     if Output_arg is None:
                         try:
-                            with patch_stdout():
-                                Output = session.prompt("Enter the filename to write on the target machine: ", key_bindings=key_bindings)
-                                if Output == "__stepback__":
-                                    step = 3
-                                    raise StepBack()
+                            # Extract the basename from selected_file
+                            default_filename = os.path.basename(selected_file)
+                            
+                            # Determine temp path based on OS
+                            if OS.lower() == "windows":
+                                temp_path = f"C:\\Windows\\Temp\\{default_filename}"
+                            else:
+                                temp_path = f"/tmp/{default_filename}"
+                            
+                            # Create menu options
+                            menu_options = [
+                                f"Same filename ({default_filename})",
+                                f"Same filename in temp ({temp_path})",
+                                "Custom"
+                            ]
+                            
+                            # Show the menu
+                            output_menu = TerminalMenu(menu_options, menu_cursor="=>  ", menu_highlight_style=style, title="Filename to write on the target machine? ")
+                            menu_index = output_menu.show()
+                            
+                            # Handle menu selection
+                            if menu_index is None:
+                                # ESC was pressed
+                                step = 3
+                                raise StepBack()
+                            elif menu_index == 0:
+                                # Same filename
+                                Output = default_filename
+                            elif menu_index == 1:
+                                # Same filename in temp
+                                Output = temp_path
+                            elif menu_index == 2:
+                                # Custom - show prompt with default
+                                with patch_stdout():
+                                    Output = session.prompt("Enter the filename to write on the target machine: ", default=default_filename, key_bindings=key_bindings)
+                                    if Output == "__stepback__":
+                                        # Stay in step 4 so that StepBack returns to the output menu
+                                        step = 4
+                                        raise StepBack()
                         except (KeyboardInterrupt, EOFError):
                             sys.exit(0)
                     else:
