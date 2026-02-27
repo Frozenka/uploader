@@ -129,6 +129,8 @@ def payload_requires_output(os_name: str, payload: str) -> bool:
 
     return False
 def generate_download_command(OS, IPHOST, selected_file, selected_port, Payload, Output=None):
+    if payload_requires_output(OS, Payload) and not (Output or "").strip():
+        Output = os.path.basename(selected_file)
     base_url = f'http://{IPHOST}:{selected_port}/{os.path.basename(selected_file)}'
     if OS.lower() == "linux":
         if Payload == "Wget":
@@ -164,8 +166,16 @@ def start_http_server(selected_file, IPHOST, selected_port, download_command, Ou
                 self.send_error(404, "File Not Found: %s" % self.path)
 
     command_to_clip = download_command
-    os.system(f"echo -n '{command_to_clip}' | xclip -selection clipboard")
-    print(f"The command '{command_to_clip}' has been copied to your clipboard.")
+    try:
+        if os.environ.get("WAYLAND_DISPLAY"):
+            subprocess.run(["wl-copy"], input=command_to_clip.encode(), check=True)
+        else:
+            subprocess.run(["xclip", "-selection", "clipboard"], input=command_to_clip.encode(), check=True)
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        print(f"Could not copy to clipboard: {e}")
+        print(f"The command: {command_to_clip}")
+    else:
+        print(f"The command '{command_to_clip}' has been copied to your clipboard.")
 
     with socketserver.TCPServer((IPHOST, selected_port), CustomHTTPRequestHandler) as httpd:
         print(f"Server started at {IPHOST}:{selected_port}")
@@ -345,10 +355,12 @@ def MenuGeneral(os_arg=None, file_arg=None, port_arg=None, payload_arg=None, Out
                     if Output_arg is None:
                         try:
                             with patch_stdout():
-                                Output = session.prompt("Enter the filename to write on the target machine: ", key_bindings=key_bindings)
+                                Output = session.prompt("Enter the filename to write on the target machine (leave empty to use input filename): ", key_bindings=key_bindings)
                                 if Output == "__stepback__":
                                     step = 3
                                     raise StepBack()
+                                if not (Output or "").strip():
+                                    Output = os.path.basename(selected_file)
                         except (KeyboardInterrupt, EOFError):
                             sys.exit(0)
                     else:
