@@ -166,16 +166,23 @@ def start_http_server(selected_file, IPHOST, selected_port, download_command, Ou
                 self.send_error(404, "File Not Found: %s" % self.path)
 
     command_to_clip = download_command
-    try:
-        if os.environ.get("WAYLAND_DISPLAY"):
+    copied = False
+    if os.environ.get("WAYLAND_DISPLAY"):
+        try:
             subprocess.run(["wl-copy"], input=command_to_clip.encode(), check=True)
-        else:
+            copied = True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+    if not copied:
+        try:
             subprocess.run(["xclip", "-selection", "clipboard"], input=command_to_clip.encode(), check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        print(f"Could not copy to clipboard: {e}")
-        print(f"The command: {command_to_clip}")
-    else:
+            copied = True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+    if copied:
         print(f"The command '{command_to_clip}' has been copied to your clipboard.")
+    else:
+        print(f"The command: {command_to_clip}")
 
     with socketserver.TCPServer((IPHOST, selected_port), CustomHTTPRequestHandler) as httpd:
         print(f"Server started at {IPHOST}:{selected_port}")
